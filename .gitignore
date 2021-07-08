@@ -1,0 +1,11 @@
+/.coverage
+/.idea
+__pycache__
+/dist
+/htmlcov
+/python_matrix_runner.egg-info
+/build
+*.bak
+/coverage.xml
+/debug.log
+/junit-reports
