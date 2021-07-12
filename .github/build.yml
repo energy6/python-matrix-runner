@@ -1,0 +1,40 @@
+name: Build
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    path:
+      - '**/*.py'
+      - 'requirements.txt'
+jobs:
+  tests:
+    name: Unit tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: [3.8, 3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run pylint
+        run: |
+          pylint --exit-zero --rcfile=./pylintrc matrix_runner tests
+      - name: Run tests with coverage
+        run: |
+          coverage run --branch -m xmlrunner -o junit discover
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-results-${{ matrix.os }}-${{ matrix.python-version }}
+          path: junit/*.xml
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}
