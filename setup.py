@@ -11,7 +11,7 @@ def version_from_git_tag():
     # Using package version according to PEP 440 -- Version Identification and Dependency Specification
     # https://www.python.org/dev/peps/pep-0440/#local-version-identifiers
     pattern = "^v((\\d+)\\.(\\d+)\\.(\\d+)((a|b|rc)\\d+)?(\\.post\\d+)?(\\.dev\\d+)?)(-(\\d+)-g([0-9a-f]{7}))?$"
-    describe = subprocess.check_output(["git", "describe", "--match", "v*"]).rstrip().decode()
+    describe = subprocess.check_output(["git", "describe", "--tags", "--match", "v*"]).rstrip().decode()
     match = re.match(pattern, describe)
     if match.group(10) and match.group(11):
         return f"{match.group(1)}+git{match.group(10)}.{match.group(11)}"
