@@ -26,6 +26,7 @@ jobs:
           pip install twine wheel
       - name: Run pylint
         run: |
+          echo "::add-matcher::.github/pylint.json"
           pylint --exit-zero --rcfile=./pylintrc matrix_runner tests
       - name: Build distribution
         run: |
