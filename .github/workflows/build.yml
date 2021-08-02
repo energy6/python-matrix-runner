@@ -59,13 +59,14 @@ jobs:
       - name: Publish test results
         uses: mikepenz/action-junit-report@v2
         with:
+          check_name: "JUnit Test Report [${{ matrix.os }}, ${{ matrix.python-version }}]"
           report_paths: junit/*.xml
         if: ${{ always() }}
       - uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
-          flags: unittests
+          flags: unittests,${{ matrix.os }},python-${{ matrix.python-version }}
           name: cov-${{ matrix.os }}-${{ matrix.python-version }}
           fail_ci_if_error: true
           verbose: true
