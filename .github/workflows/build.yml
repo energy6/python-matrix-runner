@@ -55,10 +55,19 @@ jobs:
       - name: Run tests with coverage
         run: |
           coverage run --branch -m xmlrunner -o junit discover
-      - name: Upload test results
-        uses: actions/upload-artifact@v2
+          coverage xml --include="./matrix_runner/**"
+      - name: Publish test results
+        uses: mikepenz/action-junit-report@v2
         with:
-          name: pytest-results-${{ matrix.os }}-${{ matrix.python-version }}
-          path: junit/*.xml
-        # Use always() to always run this step to publish test results when there are test failures
+          check_name: "JUnit Test Report [${{ matrix.os }}, ${{ matrix.python-version }}]"
+          report_paths: junit/*.xml
+        if: ${{ always() }}
+      - uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: unittests,${{ matrix.os }},python-${{ matrix.python-version }}
+          name: cov-${{ matrix.os }}-${{ matrix.python-version }}
+          fail_ci_if_error: true
+          verbose: true
         if: ${{ always() }}
