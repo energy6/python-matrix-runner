@@ -30,7 +30,7 @@ jobs:
       - name: Build distribution
         run: |
           python setup.py sdist bdist_wheel
-          twine check vco/*
+          twine check dist/*
       - name: Upload distribution
         uses: actions/upload-artifact@v2
         with:
@@ -59,7 +59,7 @@ jobs:
       - name: Publish test results
         uses: mikepenz/action-junit-report@v2
         with:
-          report_path: junit/*.xml
+          report_paths: junit/*.xml
         if: ${{ always() }}
       - uses: codecov/codecov-action@v2
         with:
