@@ -30,7 +30,7 @@ jobs:
       - name: Build distribution
         run: |
           python setup.py sdist bdist_wheel
-          twine check dist/*
+          twine check vco/*
       - name: Upload distribution
         uses: actions/upload-artifact@v2
         with:
@@ -55,10 +55,18 @@ jobs:
       - name: Run tests with coverage
         run: |
           coverage run --branch -m xmlrunner -o junit discover
-      - name: Upload test results
-        uses: actions/upload-artifact@v2
+          coverage xml --include="./matrix_runner/**"
+      - name: Publish test results
+        uses: mikepenz/action-junit-report@v2
         with:
-          name: pytest-results-${{ matrix.os }}-${{ matrix.python-version }}
-          path: junit/*.xml
-        # Use always() to always run this step to publish test results when there are test failures
+          report_path: junit/*.xml
+        if: ${{ always() }}
+      - uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: unittests
+          name: cov-${{ matrix.os }}-${{ matrix.python-version }}
+          fail_ci_if_error: true
+          verbose: true
         if: ${{ always() }}
