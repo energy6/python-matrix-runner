@@ -1,0 +1,17 @@
+{
+	"problemMatcher": {
+		"owner": "pylint",
+		"fileLocation": [
+			"relative",
+			"${workspaceFolder}"
+		],
+		"pattern": {
+			"regexp": "^(.*):(.*):(\\d+):\\s+\\[((W|E)\\d+)\\((.*)\\), (.*)\\]\\s+(.*)$",
+			"file": 1,
+			"line": 3,
+			"severity": 5,
+      "code": 4,
+			"message": 8
+		}
+	}
+}
