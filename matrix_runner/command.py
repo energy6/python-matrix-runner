@@ -136,16 +136,19 @@ class Command:
             children = {parent}
 
             def observer():
-                logging.debug("Observing process %s [pid %d]", parent.name(), parent.pid, extra=extra)
-                while parent.is_running():
-                    sleep(1)
-                    try:
-                        new = set(parent.children(recursive=True)) - children
-                        children.update(new)
-                        for child in new:
-                            logging.debug("Detected new subprocess %s [pid %d]", child.name(), child.pid, extra=extra)
-                    except NoSuchProcess:
-                        pass
+                try:
+                    logging.debug("Observing process %s [pid %d]", parent.name(), parent.pid, extra=extra)
+                    while parent.is_running():
+                        sleep(1)
+                        try:
+                            new = set(parent.children(recursive=True)) - children
+                            children.update(new)
+                            for child in new:
+                                logging.debug("Detected new subprocess %s [pid %d]", child.name(), child.pid, extra=extra)
+                        except NoSuchProcess:
+                            pass
+                except NoSuchProcess:
+                    pass
 
             worker = Thread(target=observer, daemon=True)
             worker.start()
@@ -154,9 +157,8 @@ class Command:
                 yield
             finally:
                 if parent.is_running():
-                    logging.error(
-                        "Process %s [pid %d] did not terminate!", parent.name(), parent.pid, extra=extra)
                     try:
+                        logging.error("Process %s [pid %d] did not terminate!", parent.name(), parent.pid, extra=extra)
                         parent.kill()
                         parent.wait(timeout=10)
                     except NoSuchProcess:
