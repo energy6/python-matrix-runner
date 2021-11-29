@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import os
 import platform
 
 from pathlib import Path
+from tempfile import NamedTemporaryFile
+from textwrap import dedent
 from unittest import TestCase, mock
 from unittest.mock import MagicMock, call, ANY, DEFAULT, NonCallableMagicMock
 
@@ -71,6 +74,19 @@ class TestCommand(TestCase):
             resolve.assert_called_once_with(Path('test.py'))
             # ... AND all elements are resolved to strings
             self.assertListEqual(["python", "test.py", "42"], resolved)
+
+    def test_resolve_cmdline_with_whitespace(self):
+        # GIVEN a Command with mock'ed function
+        cmd = Command(MagicMock)
+        # ... AND mock'ed utility functions
+        with mock.patch('shutil.which', return_value="C:\\Program Files\\Git\\usr\\bin\\bash.EXE") as which:
+            # WHEN resolving an assumed command line containing whitespace
+            resolved = cmd._resolve_cmdline(["bash"])
+
+            # THEN the command has been passed to shutil.which
+            which.assert_called_once_with('bash')
+            # ... AND all elements are resolved to strings
+            self.assertListEqual(['"C:\\Program Files\\Git\\usr\\bin\\bash.EXE"'], resolved)
 
     def test_is_success_default(self):
         # GIVEN a Command with mock'ed function and default exit_code
@@ -319,16 +335,60 @@ class TestCommand(TestCase):
             self.assertRegex(stderr.getvalue(), "error message")
 
     def test_popen_with_timeout(self):
+        # GIVEN a properly configured logging
         logging.basicConfig(level=logging.DEBUG)
-
+        # .. AND an os-dependent command line with long running command
         if is_windows():
             cmd = ['powershell', '-Command', 'Wait-Event -SourceIdentifier "Terminate"']
         else:
             cmd = ['bash', '-c', '(bash -c \'while true; do sleep 30; done\') & wait']
-
+        # .. AND an empty Result object
         result = Result()
 
+        # WHEN running a command with shell, log and error output
         with self.assertRaises(TimeoutError):
             Command._popen(cmd, result, timeout=10)
 
+        # THEN the result's exit status contains the TimeoutError
         self.assertIsInstance(result.exit_status, TimeoutError)
+
+    def test_popen_with_whitespace(self):
+        # GIVEN a properly configured logging
+        logging.basicConfig(level=logging.DEBUG)
+        # .. AND a test output message
+        message = 'Hello from a script with whitespace.'
+        # .. AND an os-dependent script
+        if is_windows():
+            suffix = '.bat'
+            content = dedent(f'''
+                @echo off
+                echo "{message}"
+                echo %*
+            ''')
+        else:
+            suffix = '.sh'
+            content = dedent(f'''
+                #!/bin/sh
+                echo "{message}"
+                echo $*
+            ''')
+        # .. AND written to a temporary file
+        with NamedTemporaryFile(mode='w+t', delete=False,
+                                dir=Path.cwd(), prefix='script with whitespace ', suffix=suffix) as script:
+            script.write(dedent(content))
+            self.addCleanup(os.unlink, script.name)
+        # .. AND having the file being executable
+        Path(script.name).chmod(0o777)
+        # .. AND an empty Result object
+        result = Result()
+
+        # WHEN running a command with shell, log and error output
+        exit_status = Command._popen([f'"{script.name}"', 'arg1', 'arg2'], result, needs_shell=True)
+
+        # THEN the exit status reflects success
+        self.assertEqual(exit_status, 0)
+        # ... AND the message has been captured in the Result object
+        self.assertRegex(result.output.getvalue(), message)
+        # ... AND the arguments havew been captured in the Result object
+        self.assertRegex(result.output.getvalue(), 'arg1')
+        self.assertRegex(result.output.getvalue(), 'arg2')
