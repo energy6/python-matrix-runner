@@ -75,6 +75,6 @@ jobs:
         if: ${{ always() }}
       - name: Push result to Testspace server
         run: |
-          testspace [ [${{ matrix.os }} ][ [${{ ${{ matrix.python-version }} }} ]junit/*.xml
-          testspace [ [${{ matrix.os }} ][ [${{ ${{ matrix.python-version }} }} ]coverage.xml
+          testspace [ [${{ matrix.os }} ][ [ ${{ matrix.python-version }} ]junit/*.xml
+          testspace [ [${{ matrix.os }} ][ [ ${{ matrix.python-version }} ]coverage.xml
         if: always()
