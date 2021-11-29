@@ -1,3 +1,13 @@
+
+.. image:: https://img.shields.io/github/workflow/status/energy6/python-matrix-runner/Build/main?style=flat   :alt: GitHub Workflow Status (branch)
+.. image:: https://img.shields.io/testspace/tests/energy6/energy6:python-matrix-runner/testspace?compact_message   :alt: Unittests
+.. image:: https://img.shields.io/codecov/c/github/energy6/python-matrix-runner?style=flat   :alt: Codecov
+.. image:: https://img.shields.io/pypi/pyversions/python-matrix-runner?style=flat   :alt: PyPI - Python Version
+.. image:: https://img.shields.io/pypi/wheel/python-matrix-runner?style=flat   :alt: PyPI - Wheel
+.. image:: https://img.shields.io/pypi/v/python-matrix-runner?style=flat   :alt: PyPI
+.. image:: https://img.shields.io/pypi/l/python-matrix-runner?style=flat   :alt: PyPI - License
+
+
 Matrix Runner for Python
 ========================
 
