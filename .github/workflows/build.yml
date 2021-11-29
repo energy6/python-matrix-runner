@@ -45,6 +45,9 @@ jobs:
         python-version: ['3.8', '3.9', '3.10']
     steps:
       - uses: actions/checkout@v2
+      - uses: testspace-com/setup-testspace@v1      
+        with:
+          domain: energy6
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -72,3 +75,8 @@ jobs:
           fail_ci_if_error: true
           verbose: true
         if: ${{ always() }}
+      - name: Push result to Testspace server
+        run: |
+          testspace "[${{ matrix.os }}-${{ matrix.python-version }}]junit/*.xml"
+          testspace "[${{ matrix.os }}-${{ matrix.python-version }}]coverage.xml"
+        if: always()
