@@ -33,5 +33,16 @@ setup(
     author_email='jonatan@familie-antoni.de',
     description='Helper to run command with matrix configurations',
     long_description=open('README.rst').read(),
-    long_description_content_type='text/x-rst'
+    long_description_content_type='text/x-rst',
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: BSD 3-Clause License",
+        "Natural Language :: English",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Topic :: Software Development :: Build Tools"
+    ]
 )

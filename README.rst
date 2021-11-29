@@ -1,3 +1,5 @@
+|build-badge| |test-badge| |cov-badge| |python-badge| |wheel-badge| |pypi-badge| |license-badge|
+
 Matrix Runner for Python
 ========================
 
@@ -532,3 +534,26 @@ reduce the matrix reported by inspect::
                "desc": "A configuration axis"}},
       "matrix": [{"alpha": "value2"}, {"alpha": "value3"}]
     }
+
+
+.. |build-badge| image:: https://img.shields.io/github/workflow/status/energy6/python-matrix-runner/Build/main?style=flat
+    :target: https://github.com/energy6/python-matrix-runner/actions/workflows/build.yml?query=event%3Apush+branch%3Amain+is%3Acompleted
+    :alt: GitHub main-branch Build Workflow Status
+.. |test-badge| image:: https://img.shields.io/testspace/tests/energy6/energy6:python-matrix-runner/testspace?compact_message
+    :target: https://energy6.testspace.com/spaces/156681
+    :alt: Unit tests results
+.. |cov-badge| image:: https://img.shields.io/codecov/c/github/energy6/python-matrix-runner?style=flat
+    :target: https://app.codecov.io/gh/energy6/python-matrix-runner/branch/main
+    :alt: Codecov coverage report
+.. |python-badge| image:: https://img.shields.io/pypi/pyversions/python-matrix-runner?style=flat
+    :target: https://pypi.org/project/python-matrix-runner/
+    :alt: PyPI - Python Version
+.. |wheel-badge| image:: https://img.shields.io/pypi/wheel/python-matrix-runner?style=flat
+    :target: https://pypi.org/project/python-matrix-runner/
+    :alt: PyPI - Wheel
+.. |pypi-badge| image:: https://img.shields.io/pypi/v/python-matrix-runner?style=flat
+    :target: https://pypi.org/project/python-matrix-runner/
+    :alt: PyPI
+.. |license-badge| image:: https://img.shields.io/pypi/l/python-matrix-runner?style=flat
+    :target: https://pypi.org/project/python-matrix-runner/
+    :alt: PyPI - License
