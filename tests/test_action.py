@@ -34,7 +34,7 @@ class TestAction(TestCase):
 
         # AND annotating a function as summary
         @action.summary
-        def summary(results):  # pylint: disable=unused-argument
+        def summary(_):  # pylint: disable=unused-argument
             ...
 
         # THEN the function is registered as the summary function

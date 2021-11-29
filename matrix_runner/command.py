@@ -120,6 +120,8 @@ class Command:
         cmdline = [Command._resolve_cmdlineel(el) for el in cmdline]
         cmd = shutil.which(cmdline[0])
         if cmd:
+            if ' ' in cmd:
+                cmd = f'"{cmd}"'
             cmdline[0] = cmd
         else:
             logging.error("Command '%s' not found in current environment.", cmdline[0], extra=self.extra)

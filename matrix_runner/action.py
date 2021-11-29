@@ -9,10 +9,10 @@ from typing import Callable, List, Iterator, Tuple, Union, AnyStr, Optional
 
 import matrix_runner.preferences as prefs
 
-from .command import Command, Result
-from .report import ReportFilter
 from ._helper import colorize
+from .command import Command, Result
 from .config import Config
+from .report import ReportFilter
 
 ActionFunction = Callable[[Config, Optional[Result]], Iterator[Union[Command, Tuple]]]
 
