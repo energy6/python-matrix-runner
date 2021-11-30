@@ -70,7 +70,7 @@ class ReportFilter:
 
         def write(self, filename: AnyStr):
             """Write filter input to file."""
-            with open(filename, "w") as file:
+            with open(filename, "w", encoding='utf-8') as file:
                 self.stream.seek(0)
                 shutil.copyfileobj(self.stream, file)
 
@@ -124,7 +124,7 @@ class FileReport(ReportFilter):
         @ReportFilter.Result.cached("_stream")
         def stream(self) -> TextIOBase:
             try:
-                return open(self._report.filename, 'r')
+                return open(self._report.filename, 'r', encoding='utf-8')
             except FileNotFoundError as e:
                 raise RuntimeError from e
 

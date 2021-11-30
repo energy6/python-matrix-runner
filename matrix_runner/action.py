@@ -47,7 +47,7 @@ class Action:
         return self._name
 
     def __call__(self, config: Config) -> List[Result]:
-        results = list()
+        results = []
         params = [config]
         if len(signature(self._fn).parameters) >= 2:
             params += [results]

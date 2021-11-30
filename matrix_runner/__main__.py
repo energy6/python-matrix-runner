@@ -42,7 +42,7 @@ def config(args, _):
         print(conf)
     if args.action == "list":
         if conf.exists():
-            with open(conf) as file:
+            with open(conf, encoding='utf-8') as file:
                 print(file.read())
         else:
             print(f"No {name} config file exists at:")

@@ -64,12 +64,12 @@ class Runner:
     """
 
     def __init__(self):
-        self._axes: MutableMapping[str, Axis] = dict()
-        self._actions: MutableMapping[str, Action] = dict()
-        self._filter = list()
+        self._axes: MutableMapping[str, Axis] = {}
+        self._actions: MutableMapping[str, Action] = {}
+        self._filter = []
         self._args = None
         self._matrix = None
-        self._records = dict()
+        self._records = {}
 
     @property
     def axes(self) -> Mapping[str, Axis]:
@@ -274,7 +274,7 @@ class RunnerApplication(Runner):
         """Write full execution summary to log."""
         headers = [colorize(f"%({prefs.prefix_colors()['config']})s{a}") for a in sorted(self._axes.keys())]
         headers += [colorize(f"%({prefs.prefix_colors()['action']})s{a}") for a in sorted(self._actions.keys())]
-        rows = list()
+        rows = []
         for config in self._matrix:
             records = self.records_for(config)
             row = [
