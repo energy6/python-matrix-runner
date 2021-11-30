@@ -91,7 +91,7 @@ class TestAction(TestCase):
         type(rfmock).success = PropertyMock(return_value=False)
         results = [rsmock, rfmock, rsmock]
         # THEN the summary is success
-        self.assertEqual("\x1b[01;31mFAILED\x1b[0m", action.get_summary(results))
+        self.assertEqual("\x1b[1;31mFAILED\x1b[0m", action.get_summary(results))
 
     def test_get_summary_skip(self):
         # GIVEN a mock'ed action
