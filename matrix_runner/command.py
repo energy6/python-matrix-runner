@@ -127,7 +127,7 @@ class Command:
             logging.error("Command '%s' not found in current environment.", cmdline[0], extra=self.extra)
         return cmdline
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-statements
     @staticmethod
     def _popen(cmdline: List[str], result: Result, needs_shell: bool = False, encoding: str = 'utf8',
                timeout: Optional[float] = None, extra: Optional[Dict[str, str]] = None) -> int:
@@ -146,7 +146,8 @@ class Command:
                             new = set(parent.children(recursive=True)) - children
                             children.update(new)
                             for child in new:
-                                logging.debug("Detected new subprocess %s [pid %d]", child.name(), child.pid, extra=extra)
+                                logging.debug("Detected new subprocess %s [pid %d]",
+                                              child.name(), child.pid, extra=extra)
                         except NoSuchProcess:
                             pass
                 except NoSuchProcess:
@@ -255,6 +256,8 @@ class Command:
 
             if self._exclusive:
                 lock_path = Path(gettempdir(), f"{Path(cmd).name}.lock")
+                # https://github.com/tox-dev/py-filelock/issues/102
+                # pylint: disable=abstract-class-instantiated
                 _lock = FileLock(lock_path)
                 _lock.acquire(poll_intervall=10.0)
 

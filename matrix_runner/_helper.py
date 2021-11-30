@@ -33,7 +33,7 @@ def log_formatter(fmt):
     Args:
          fmt: Log formatter to be used, temporarily.
     """
-    old_formatter = dict()
+    old_formatter = {}
     for hnd in logging.root.handlers:
         old_formatter[hnd] = hnd.formatter
         hnd.formatter = fmt
