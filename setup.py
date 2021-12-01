@@ -22,12 +22,36 @@ setup(
     name='python-matrix-runner',
     version=version_from_git_tag(),
     packages=['matrix_runner'],
-    install_requires=open('requirements.txt').read(),
+    setup_requires=[
+        'twine',
+        'wheel'
+    ],
+    install_requires=[
+        'allpairspy~=2.5',
+        'ansicolors~=1.1',
+        'colorama~=0.4',
+        'colorlog~=6.6',
+        'filelock~=3.4',
+        'junitparser~=2.2',
+        'lxml~=4.6',
+        'parameterized~=0.8',
+        'psutil~=5.8',
+        'tabulate~=0.8'
+    ],
+    extras_require={
+        'dev': [
+            'coverage~=6.2',
+            'pylint~=2.11',
+            'restructuredtext_lint~=1.3',
+            'setuptools~=59.4',
+            'unittest-xml-reporting~=3.0'
+        ]
+    },
     entry_points={
         'console_scripts': ['matrix-runner-inspect=matrix_runner.inspect:InspectRunner'],
     },
     python_requires='>=3.8',
-    url='',
+    url='https://github.com/energy6/python-matrix-runner',
     license='BSD 3-Clause License',
     author='Jonatan Antoni',
     author_email='jonatan@familie-antoni.de',
@@ -40,6 +64,8 @@ setup(
         "License :: OSI Approved :: BSD 3-Clause License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
