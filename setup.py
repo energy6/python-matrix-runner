@@ -11,8 +11,14 @@ def version_from_git_tag():
     # Using package version according to PEP 440 -- Version Identification and Dependency Specification
     # https://www.python.org/dev/peps/pep-0440/#local-version-identifiers
     pattern = "^v((\\d+)\\.(\\d+)\\.(\\d+)((a|b|rc)\\d+)?(\\.post\\d+)?(\\.dev\\d+)?)(-(\\d+)-g([0-9a-f]{7}))?$"
-    describe = subprocess.check_output(["git", "describe", "--tags", "--match", "v*"]).rstrip().decode()
+    try:
+        describe = subprocess.check_output(["git", "describe", "--tags", "--match", "v*", "--always"]).rstrip().decode()
+    except subprocess.CalledProcessError:
+        return "0.0.0+nogit"
+
     match = re.match(pattern, describe)
+    if not match:
+        return f"0.0.0+git{describe}"
     if match.group(10) and match.group(11):
         return f"{match.group(1)}+git{match.group(10)}.{match.group(11)}"
     return match.group(1)
@@ -22,10 +28,6 @@ setup(
     name='python-matrix-runner',
     version=version_from_git_tag(),
     packages=['matrix_runner'],
-    setup_requires=[
-        'twine',
-        'wheel'
-    ],
     install_requires=[
         'allpairspy~=2.5',
         'ansicolors~=1.1',
