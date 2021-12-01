@@ -6,7 +6,6 @@ on:
     branches: [ main ]
     path:
       - '**/*.py'
-      - 'requirements.txt'
 jobs:
   build:
     name: Build distribution
@@ -18,16 +17,11 @@ jobs:
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
-      - name: Install dependencies
+          python-version: '3.8'
+      - name: Install setup dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install twine wheel
-      - name: Run pylint
-        run: |
-          echo "::add-matcher::.github/pylint.json"
-          pylint --exit-zero --rcfile=./pylintrc matrix_runner tests
+          pip install -U setuptools twine wheel
       - name: Build distribution
         run: |
           python setup.py sdist bdist_wheel
@@ -36,6 +30,26 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           path: dist/*
+
+  lint:
+    name: Run PyLint checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Install dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+      - name: Run pylint
+        run: |
+          echo "::add-matcher::.github/pylint.json"
+          pylint --exit-zero --rcfile=./pylintrc matrix_runner tests
   tests:
     name: Unit tests
     runs-on: ${{ matrix.os }}
@@ -45,6 +59,8 @@ jobs:
         python-version: ['3.8', '3.9', '3.10']
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - uses: testspace-com/setup-testspace@v1      
         with:
           domain: energy6
@@ -52,10 +68,10 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
+      - name: Install dev dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -e .[dev]
       - name: Run tests with coverage
         run: |
           coverage run --branch -m xmlrunner -o junit discover
