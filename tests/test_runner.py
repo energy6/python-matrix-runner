@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import logging
 from argparse import ArgumentParser, Namespace
 from enum import Enum
 from unittest import TestCase
@@ -203,11 +203,13 @@ class TestRunner(TestCase):
         runner.add_action(action1)
 
         with captured_output() as (_, stderr):
+            logging.basicConfig(force=True)
+
             # WHEN running the action
             runner.run(['action'])
 
-            # THEN a warning is emitted to stderr
-            self.assertIn("Axis slice shadows built-in --slice flag!", stderr.getvalue())
+        # THEN a warning is emitted to stderr
+        self.assertIn("Axis slice shadows built-in --slice flag!", stderr.getvalue())
 
     @parameterized.expand([
         (['--first', 'v1', '--first', 'value3', '--second', 'v2', 'first'],
