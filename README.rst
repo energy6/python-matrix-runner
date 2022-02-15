@@ -97,7 +97,7 @@ Writing the following to ``build.py``::
 Can be executed as::
 
     $ ./build.py --help
-    usage: build.py [-h] [--silent | --verbose | --debug] [--pairwise]
+    usage: build.py [-h] [--silent | --verbose | --debug] [--pairwise] [--slice <HERE>/<TOTAL>]
                     [--alpha ALPHA] action [action ...]
 
     positional arguments:
@@ -109,6 +109,8 @@ Can be executed as::
       --verbose             Verbose log output.
       --debug               Debug log output.
       --pairwise, -2        Reduce number of combinations using pairwise algorithm.
+      --slice <HERE>/<TOTAL>
+                            Cut set of combinations into <TOTAL> number of slices and run ony <HERE>th one.
       --alpha ALPHA, -a ALPHA
                             A configuration axis: value1|v1, value2|v2, value3|v3
 
@@ -431,7 +433,7 @@ Running one or more configurations from the command line using Matrix Runner is
 trivial. The generated interface looks like this::
 
     $ ./build.py --help
-    usage: build.py [-h] [--silent | --verbose | --debug] [--pairwise]
+    usage: build.py [-h] [--silent | --verbose | --debug] [--pairwise] [--slice <HERE>/<TOTAL>]
                     [[--<axis> <AXIS>] ...] action [action ...]
 
 The positional argument ``action`` can be one or multiple define Action_'s to
@@ -445,15 +447,20 @@ Matrix Runner itself and dynamic ones generated from the defined Axis_:
 - ``--silent`` Silent mode, only errors are shown.
 - ``--verbose`` Verbose log output.
 - ``--debug`` Debug log output.
-- ``-2``, ``--pairwise`` reduces number of combinations using pairwise algorithm
-    This enables combinatorial `all-pairs testing`_ to reduce the overall
-    number of configuration in logarithmic manner while retaining a high
-    probability of detecting issues.
-- ``-<a> <AXIS>``, ``--<axis> <AXIS>`` reduce number of combinations to selected ``AXIS`` values for ``axis``
-    Axis values can be given as one of their string representations *or* an
-    fnmatch.fnmatch_ pattern matching at least one of these. In case of pattern
-    matching *all* matching values are selected. This argument can be given
-    multiple time which adds the values in a cumulative way.
+- ``-2``, ``--pairwise`` reduces number of combinations using pairwise
+  algorithm. This enables combinatorial `all-pairs testing`_ to reduce the
+  overall number of configuration in logarithmic manner while retaining a high
+  probability of detecting issues.
+- ``--slice <HERE>/<TOTAL>`` cuts the set of combinations into ``TOTAL`` number
+  of slices and executes only the ``HERE``'th one. This can be used to run the
+  overall set of combinations in parallel. Slicing is applied after
+  ``--pairwise`` reduction.
+- ``-<a> <AXIS>``, ``--<axis> <AXIS>`` reduce number of combinations to
+  selected ``AXIS`` values for ``axis`` Axis values can be given as one of
+  their string representations *or* an fnmatch.fnmatch_ pattern matching at
+  least one of these. In case of pattern matching *all* matching values are
+  selected. This argument can be given multiple time which adds the values in a
+  cumulative way.
 
 The console output has two parts. While executing the actions the output from
 the associated commands is forwarded like this::

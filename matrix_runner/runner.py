@@ -2,6 +2,7 @@
 
 import inspect
 import logging
+import math
 import sys
 
 from argparse import ArgumentParser, Action as ArgumentAction, Namespace
@@ -57,6 +58,24 @@ class LogFormatter(ColoredFormatter):
     def format(self, record):
         record = self.Record(record)
         return super().format(record)
+
+
+class Slice:
+    """Value class for slice fraction.
+    """
+
+    def __init__(self, value: str):
+        self.numerator, self.denominator = [int(x) for x in value.split('/', 2)]
+        if self.numerator > self.denominator:
+            raise ValueError()
+
+    def __hash__(self):
+        return hash((self.numerator, self.denominator))
+
+    def __eq__(self, other):
+        return ((hash(self) == hash(other)) or
+                ((self.numerator == other.numerator) and
+                (self.denominator == other.denominator)))
 
 
 class Runner:
@@ -135,6 +154,14 @@ class Runner:
         group.add_argument("--debug", action='store_true', help="Debug log output.")
         parser.add_argument("--pairwise", "-2", action='store_true',
                             help="Reduce number of combinations using pairwise algorithm.")
+
+        if "slice" in self._axes.keys():
+            logging.warning("Axis slice shadows built-in --slice flag!")
+        else:
+            parser.add_argument("--slice", type=Slice, metavar='<HERE>/<TOTAL>',
+                                help="Cut set of combinations into <TOTAL> number of slices "
+                                     "and run ony <HERE>th one.")
+
         for axis in self._axes.values():
             flags = ["--" + axis.name]
             if axis.abbrev:
@@ -174,13 +201,17 @@ class Runner:
             logging.root.setLevel(logging.DEBUG)
 
         axes = []
-        for axis in self._axes:
+        for axis in sorted(self._axes):
             axes.append([(axis, v) for v in getattr(args, axis)])
         if args.pairwise:
             self._matrix = [Config(**dict(m)) for m in
                             AllPairs(axes, filter_func=lambda row: not Filter.match(Config(**dict(row))))]
         else:
             self._matrix = [Config(**dict(m)) for m in product(*axes) if not Filter.match(Config(**dict(m)))]
+        if args.slice is Slice:
+            slice_size = int(math.ceil(len(self._matrix) / args.slice.denominator))
+            self._matrix = self._matrix[slice_size*(args.slice.numerator-1):slice_size*args.slice.numerator]
+
         for config in self._matrix:
             self.run_config(args.action, config)
         return all(r.success for r in reduce_dict(self._records))
