@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 
 from contextlib import contextmanager
 from enum import Enum
-from io import StringIO
 from tempfile import gettempdir
 from unittest import TestCase
 from unittest.mock import MagicMock

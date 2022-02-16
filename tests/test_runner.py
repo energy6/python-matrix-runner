@@ -141,9 +141,9 @@ class TestRunner(TestCase):
         self.assertEqual(runner.run_config.call_count, len(expected_calls))
 
     def test_slice(self):
-        slice = Slice('1/2')
-        self.assertEqual(slice.numerator, 1)
-        self.assertEqual(slice.denominator, 2)
+        testee = Slice('1/2')
+        self.assertEqual(testee.numerator, 1)
+        self.assertEqual(testee.denominator, 2)
         with self.assertRaises(ValueError):
             Slice('a')
         with self.assertRaises(ValueError):
