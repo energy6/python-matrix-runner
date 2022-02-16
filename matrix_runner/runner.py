@@ -208,7 +208,7 @@ class Runner:
                             AllPairs(axes, filter_func=lambda row: not Filter.match(Config(**dict(row))))]
         else:
             self._matrix = [Config(**dict(m)) for m in product(*axes) if not Filter.match(Config(**dict(m)))]
-        if args.slice is Slice:
+        if isinstance(args.slice, Slice):
             slice_size = int(math.ceil(len(self._matrix) / args.slice.denominator))
             self._matrix = self._matrix[slice_size*(args.slice.numerator-1):slice_size*args.slice.numerator]
 

@@ -138,6 +138,7 @@ class TestRunner(TestCase):
             call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE3))
         ]
         runner.run_config.assert_has_calls(expected_calls)
+        self.assertEqual(runner.run_config.call_count, len(expected_calls))
 
     def test_slice(self):
         slice = Slice('1/2')
@@ -176,6 +177,7 @@ class TestRunner(TestCase):
             call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3))
         ]
         runner.run_config.assert_has_calls(expected_calls)
+        self.assertEqual(runner.run_config.call_count, len(expected_calls))
 
         # WHEN running the last out of five slices
         runner.run_config.reset_mock()
@@ -188,6 +190,7 @@ class TestRunner(TestCase):
             call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE3))
         ]
         runner.run_config.assert_has_calls(expected_calls)
+        self.assertEqual(runner.run_config.call_count, len(expected_calls))
 
     def test_slice_shadowed(self):
         # GIVEN a Runner with mocked run_config method
