@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
-
+import logging
 from argparse import ArgumentParser, Namespace
 from enum import Enum
 from unittest import TestCase
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch, call, ANY
 
+import matrix_runner
 from parameterized import parameterized
 
 from matrix_runner import Runner, Axis, Action
+from matrix_runner.config import Config
+from matrix_runner.runner import Slice
+from tests._helper import captured_output
 
 
 class MyAxisValue(Enum):
@@ -104,39 +108,138 @@ class TestRunner(TestCase):
         self.assertEqual(27, runner.run_config.call_count)
 
     def test_run_with_pairwise(self):
+        # GIVEN a Runner with mocked run_config method
         runner = Runner()
+        runner.run_config = MagicMock()
 
+        # ... and three axes with three values each
         axis1 = Axis('first', 'f', values=MyAxisValue, desc='First axis')
         axis2 = Axis('second', 's', values=MyAxisValue, desc='Second axis')
         axis3 = Axis('third', 't', values=MyAxisValue, desc='Third axis')
         runner.add_axis([axis1, axis2, axis3])
 
+        # ... and a single action
         action1 = Action('action', MagicMock(), desc='First action')
         runner.add_action(action1)
 
-        runner.run_config = MagicMock()
-
+        # WHEN running the pairwise reduction
         runner.run(["--pairwise", "action"])
 
-        self.assertEqual(9, runner.run_config.call_count)
+        # THEN only nine out of 27 configurations are ran
+        expected_calls = [
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE1)),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE1)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE1)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE2)),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE2)),
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE2)),
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3)),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE3)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE3))
+        ]
+        runner.run_config.assert_has_calls(expected_calls)
+        self.assertEqual(runner.run_config.call_count, len(expected_calls))
+
+    def test_slice(self):
+        testee = Slice('1/2')
+        self.assertEqual(testee.numerator, 1)
+        self.assertEqual(testee.denominator, 2)
+        with self.assertRaises(ValueError):
+            Slice('a')
+        with self.assertRaises(ValueError):
+            Slice('3/2')
+
+    def test_run_with_slice(self):
+        # GIVEN a Runner with mocked run_config method
+        runner = Runner()
+        runner.run_config = MagicMock()
+
+        # ... with three axes and three values each
+        axis1 = Axis('first', 'f', values=MyAxisValue, desc='First axis')
+        axis2 = Axis('second', 's', values=MyAxisValue, desc='Second axis')
+        axis3 = Axis('third', 't', values=MyAxisValue, desc='Third axis')
+        runner.add_axis([axis1, axis2, axis3])
+
+        # ... and a single action
+        action1 = Action('action', MagicMock(), desc='First action')
+        runner.add_action(action1)
+
+        # WHEN running the first out of five slices
+        runner.run(['--slice', '1/5', 'action'])
+
+        # THEN the the first six permutations are ran
+        expected_calls = [
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE1)),
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE2)),
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE3)),
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE1)),
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE2)),
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3))
+        ]
+        runner.run_config.assert_has_calls(expected_calls)
+        self.assertEqual(runner.run_config.call_count, len(expected_calls))
+
+        # WHEN running the last out of five slices
+        runner.run_config.reset_mock()
+        runner.run(['--slice', '5/5', 'action'])
+
+        # THEN the last three permutations are ran
+        expected_calls = [
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE1)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE2)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE3))
+        ]
+        runner.run_config.assert_has_calls(expected_calls)
+        self.assertEqual(runner.run_config.call_count, len(expected_calls))
+
+    def test_slice_shadowed(self):
+        # GIVEN a Runner with mocked run_config method
+        runner = Runner()
+        runner.run_config = MagicMock()
+
+        # ... with an axis called slice
+        slice_axis = Axis('slice', 's', values=MyAxisValue, desc='Slice axis')
+        runner.add_axis([slice_axis])
+
+        # ... and a single action
+        action1 = Action('action', MagicMock(), desc='First action')
+        runner.add_action(action1)
+
+        with captured_output() as (_, stderr):
+            logging.basicConfig(force=True)
+
+            # WHEN running the action
+            runner.run(['action'])
+
+        # THEN a warning is emitted to stderr
+        self.assertIn("Axis slice shadows built-in --slice flag!", stderr.getvalue())
 
     @parameterized.expand([
         (['--first', 'v1', '--first', 'value3', '--second', 'v2', 'first'],
          {'first': [MyAxisValue.VALUE1, MyAxisValue.VALUE3],
           'second': [MyAxisValue.VALUE2], 'action': ['first'],
-          'pairwise': False, 'debug': False, 'verbose': False, 'silent': False}),
+          'pairwise': False, 'debug': False, 'verbose': False, 'silent': False,
+          'slice': None}),
         (['-2', 'first', 'second'],
          {'first': None, 'second': None, 'action': ['first', 'second'],
-          'pairwise': True, 'debug': False, 'verbose': False, 'silent': False}),
+          'pairwise': True, 'debug': False, 'verbose': False, 'silent': False,
+          'slice': None}),
         (['--debug', 'first'],
          {'first': None, 'second': None, 'action': ['first'],
-          'pairwise': False, 'debug': True, 'verbose': False, 'silent': False}),
+          'pairwise': False, 'debug': True, 'verbose': False, 'silent': False,
+          'slice': None}),
         (['--verbose', 'first'],
          {'first': None, 'second': None, 'action': ['first'],
-          'pairwise': False, 'debug': False, 'verbose': True, 'silent': False}),
+          'pairwise': False, 'debug': False, 'verbose': True, 'silent': False,
+          'slice': None}),
         (['--silent', 'first'],
          {'first': None, 'second': None, 'action': ['first'],
-          'pairwise': False, 'debug': False, 'verbose': False, 'silent': True})
+          'pairwise': False, 'debug': False, 'verbose': False, 'silent': True,
+          'slice': None}),
+        (['--slice', '1/2', 'first'],
+         {'first': None, 'second': None, 'action': ['first'],
+          'pairwise': False, 'debug': False, 'verbose': False, 'silent': False,
+          'slice': matrix_runner.runner.Slice('1/2')})
     ])
     def test_arg_parser(self, argv, args):
         # Given a new Runner object
@@ -183,7 +286,8 @@ class TestRunner(TestCase):
         # ... which returns the expected Namespace object
         result = parser.parse_args(['-s', 'True', 'first'])
         self.assertDictEqual({'first': None, 'second': [MyBoolAxisValue.POSITIVE], 'action': [actions['first']],
-                              'pairwise': False, 'debug': False, 'verbose': False, 'silent': False}, vars(result))
+                              'pairwise': False, 'debug': False, 'verbose': False, 'silent': False, 'slice': None},
+                             vars(result))
 
     def test_parse_args(self):
         # Given a new Runner object

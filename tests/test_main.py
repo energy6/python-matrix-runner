@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 
 from contextlib import contextmanager
 from enum import Enum
-from io import StringIO
 from tempfile import gettempdir
 from unittest import TestCase
 from unittest.mock import MagicMock
@@ -14,6 +12,7 @@ from colors import strip_color
 
 from matrix_runner import Axis, Action
 from matrix_runner import main
+from tests._helper import captured_output
 
 
 class MyAlphaAxisValue(Enum):
@@ -29,18 +28,6 @@ class MyBetaAxisValue(Enum):
     VALUE_B = ('valueB', 'vB')
     VALUE_C = ('valueC', 'vC')
     VALUE_D = ('valueD', 'vD')
-
-
-@contextmanager
-def captured_output():
-    """Context manager to capture console output"""
-    new_out, new_err = StringIO(), StringIO()
-    old_out, old_err = sys.stdout, sys.stderr
-    try:
-        sys.stdout, sys.stderr = new_out, new_err
-        yield sys.stdout, sys.stderr
-    finally:
-        sys.stdout, sys.stderr = old_out, old_err
 
 
 class TestMain(TestCase):
