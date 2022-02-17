@@ -144,10 +144,21 @@ class TestRunner(TestCase):
         testee = Slice('1/2')
         self.assertEqual(testee.numerator, 1)
         self.assertEqual(testee.denominator, 2)
+
         with self.assertRaises(ValueError):
             Slice('a')
+
         with self.assertRaises(ValueError):
             Slice('3/2')
+
+        with self.assertRaises(ValueError):
+            Slice('0/2')
+
+        with self.assertRaises(ValueError):
+            Slice('1/0')
+
+        with self.assertRaises(ValueError):
+            Slice('-1/-1')
 
     def test_run_with_slice(self):
         # GIVEN a Runner with mocked run_config method
@@ -170,11 +181,11 @@ class TestRunner(TestCase):
         # THEN the the first six permutations are ran
         expected_calls = [
             call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE1)),
-            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE2)),
-            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE3)),
-            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE1)),
-            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE2)),
-            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3))
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3)),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE2)),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE1)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE3)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE2))
         ]
         runner.run_config.assert_has_calls(expected_calls)
         self.assertEqual(runner.run_config.call_count, len(expected_calls))
@@ -183,14 +194,43 @@ class TestRunner(TestCase):
         runner.run_config.reset_mock()
         runner.run(['--slice', '5/5', 'action'])
 
-        # THEN the last three permutations are ran
+        # THEN the last five permutations are ran
         expected_calls = [
-            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE1)),
-            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE2)),
-            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE3))
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE2)),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE1)),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE2)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE1))
         ]
         runner.run_config.assert_has_calls(expected_calls)
         self.assertEqual(runner.run_config.call_count, len(expected_calls))
+
+    def test_run_with_empty_slice(self):
+        # GIVEN a Runner with mocked run_config method
+        runner = Runner()
+        runner.run_config = MagicMock()
+
+        # ... with three axes and three values each
+        axis1 = Axis('first', 'f', values=MyAxisValue, desc='First axis')
+        axis2 = Axis('second', 's', values=MyAxisValue, desc='Second axis')
+        axis3 = Axis('third', 't', values=MyAxisValue, desc='Third axis')
+        runner.add_axis([axis1, axis2, axis3])
+
+        # ... and a single action
+        action1 = Action('action', MagicMock(), desc='First action')
+        runner.add_action(action1)
+
+        with captured_output() as (_, stderr):
+            logging.basicConfig(force=True)
+
+            # WHEN running more slices than available combinations
+            runner.run(['--slice', '28/28', 'action'])
+
+        # THEN  no combination is ran
+        runner.run_config.assert_not_called()
+
+        # ... and a warning is emitted to stderr
+        self.assertIn("Deviding 27 combination into 28 slices results in empty runs!", stderr.getvalue())
 
     def test_slice_shadowed(self):
         # GIVEN a Runner with mocked run_config method
