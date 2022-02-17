@@ -546,7 +546,7 @@ reduce the matrix reported by inspect::
 .. |build-badge| image:: https://img.shields.io/github/workflow/status/energy6/python-matrix-runner/Build/main?style=flat
     :target: https://github.com/energy6/python-matrix-runner/actions/workflows/build.yml?query=event%3Apush+branch%3Amain+is%3Acompleted
     :alt: GitHub main-branch Build Workflow Status
-.. |test-badge| image:: https://img.shields.io/testspace/tests/energy6/energy6:python-matrix-runner/testspace?compact_message
+.. |test-badge| image:: https://img.shields.io/testspace/tests/energy6/energy6:python-matrix-runner/main?compact_message
     :target: https://energy6.testspace.com/spaces/156681
     :alt: Unit tests results
 .. |cov-badge| image:: https://img.shields.io/codecov/c/github/energy6/python-matrix-runner?style=flat
