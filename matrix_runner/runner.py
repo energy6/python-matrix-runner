@@ -2,7 +2,6 @@
 
 import inspect
 import logging
-import math
 import sys
 
 from argparse import ArgumentParser, Action as ArgumentAction, Namespace
@@ -66,7 +65,9 @@ class Slice:
 
     def __init__(self, value: str):
         self.numerator, self.denominator = [int(x) for x in value.split('/', 2)]
-        if self.numerator > self.denominator:
+        if (self.numerator < 1) \
+                or (self.denominator < 1) \
+                or (self.numerator > self.denominator):
             raise ValueError()
 
     def __hash__(self):
@@ -209,8 +210,10 @@ class Runner:
         else:
             self._matrix = [Config(**dict(m)) for m in product(*axes) if not Filter.match(Config(**dict(m)))]
         if isinstance(args.slice, Slice):
-            slice_size = int(math.ceil(len(self._matrix) / args.slice.denominator))
-            self._matrix = self._matrix[slice_size*(args.slice.numerator-1):slice_size*args.slice.numerator]
+            if args.slice.denominator > len(self._matrix):
+                logging.warning("Deviding %d combination into %d slices results in empty runs!",
+                                len(self._matrix), args.slice.denominator)
+            self._matrix = self._matrix[args.slice.numerator-1::args.slice.denominator]
 
         for config in self._matrix:
             self.run_config(args.action, config)
