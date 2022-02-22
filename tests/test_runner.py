@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, PropertyMock, patch, call, ANY
 import matrix_runner
 from parameterized import parameterized
 
-from matrix_runner import Runner, Axis, Action
+from matrix_runner import Runner, Axis, Action, Filter
 from matrix_runner.config import Config
 from matrix_runner.runner import Slice
 from tests._helper import captured_output
@@ -136,6 +136,43 @@ class TestRunner(TestCase):
             call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3)),
             call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE3)),
             call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE3))
+        ]
+        runner.run_config.assert_has_calls(expected_calls)
+        self.assertEqual(runner.run_config.call_count, len(expected_calls))
+
+    def test_run_with_pairwise_and_filters(self):
+        # GIVEN a Runner with mocked run_config method
+        runner = Runner()
+        runner.run_config = MagicMock()
+
+        # ... and three axes with three values each
+        axis1 = Axis('first', 'f', values=MyAxisValue, desc='First axis')
+        axis2 = Axis('second', 's', values=MyAxisValue, desc='Second axis')
+        axis3 = Axis('third', 't', values=MyAxisValue, desc='Third axis')
+        runner.add_axis([axis1, axis2, axis3])
+
+        # ... and a filter
+        filter1 = Filter(lambda config: config.first == MyAxisValue.VALUE1 and config.second == MyAxisValue.VALUE2)
+
+        # ... and a single action
+        action1 = Action('action', MagicMock(), desc='First action')
+        runner.add_action(action1)
+
+        # WHEN running the pairwise reduction
+        runner.run(["--pairwise", "action"])
+
+        # THEN only nine out of 27 configurations are ran
+        expected_calls = [
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE1)),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE1)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE1)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE2)),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE2)),
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE2)),
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE3)),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE3)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE3)),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3))
         ]
         runner.run_config.assert_has_calls(expected_calls)
         self.assertEqual(runner.run_config.call_count, len(expected_calls))
