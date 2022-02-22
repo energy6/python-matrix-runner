@@ -32,7 +32,7 @@ class InspectRunner(Runner):
         parser.add_argument("script", type=open, help="The Matrix Runner script to inspect.")
         args, argv = parser.parse_known_args(argv)
 
-        exec(args.script.read())  # pylint: disable=exec-used
+        exec(args.script.read(), globals())  # pylint: disable=exec-used
 
         self.add_axis(Axis.get_instances())
         success = self.run(argv)
