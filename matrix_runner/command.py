@@ -120,8 +120,6 @@ class Command:
         cmdline = [Command._resolve_cmdlineel(el) for el in cmdline]
         cmd = shutil.which(cmdline[0])
         if cmd:
-            if ' ' in cmd:
-                cmd = f'"{cmd}"'
             cmdline[0] = cmd
         else:
             logging.error("Command '%s' not found in current environment.", cmdline[0], extra=self.extra)
@@ -192,8 +190,11 @@ class Command:
                     logging.warning("Waiting for subprocesses failed!", extra=extra)
                     logging.debug("Exception Info", exc_info=exc_info, extra=extra)
 
-        if isinstance(cmdline, Iterable) and needs_shell:
-            cmdline = ' '.join(cmdline)
+        if needs_shell:
+            for idx, cmd in enumerate(cmdline):
+                if " " in cmd:
+                    cmdline[idx] = '"'+cmd.replace('"', '\\"')+'"'
+            cmdline = " ".join(cmdline)
 
         with Popen(cmdline, stdout=PIPE, stderr=PIPE, shell=needs_shell, encoding=encoding) as proc, \
                 result.capture(proc), observe(proc):
