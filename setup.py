@@ -32,21 +32,21 @@ setup(
         'allpairspy~=2.5',
         'ansicolors~=1.1',
         'colorama~=0.4',
-        'colorlog~=6.6',
-        'filelock~=3.4',
-        'junitparser~=2.2',
-        'lxml~=4.6',
-        'parameterized~=0.8',
-        'psutil~=5.8',
-        'tabulate~=0.8'
+        'colorlog~=6.7',
+        'filelock~=3.12',
+        'junitparser~=2.8',
+        'lxml~=4.9',
+        'parameterized~=0.9',
+        'psutil~=5.9',
+        'tabulate~=0.9'
     ],
     extras_require={
         'dev': [
-            'coverage~=6.2',
-            'pylint~=2.11',
-            'restructuredtext_lint~=1.3',
-            'setuptools~=59.4',
-            'unittest-xml-reporting~=3.0'
+            'coverage~=6.5',
+            'pylint~=2.17',
+            'restructuredtext_lint~=1.4',
+            'setuptools~=68.2',
+            'unittest-xml-reporting~=3.2'
         ]
     },
     entry_points={
@@ -71,6 +71,8 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Software Development :: Build Tools"
     ]
 )

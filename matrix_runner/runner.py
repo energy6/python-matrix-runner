@@ -7,6 +7,7 @@ import sys
 from argparse import ArgumentParser, Action as ArgumentAction, Namespace
 from itertools import product
 from pathlib import Path
+from shlex import split
 from types import GeneratorType
 from typing import Union, Iterable, Mapping, List, MutableMapping
 
@@ -162,6 +163,12 @@ class Runner:
             parser.add_argument("--slice", type=Slice, metavar='<HERE>/<TOTAL>',
                                 help="Cut set of combinations into <TOTAL> number of slices "
                                      "and run ony <HERE>th one.")
+            
+        if "extra-args" in self._axes.keys():
+            logging.warning("Axis extra-args shadows built-in --extra-args flag!")
+        else:
+            parser.add_argument("--extra-args", type=split, action=_AppendAxisValuesAction,
+                                help="Extra arguments for all actions.")
 
         for axis in self._axes.values():
             flags = ["--" + axis.name]
@@ -172,6 +179,15 @@ class Runner:
         action_help = f"Action(s) to be executed: {', '.join(self._actions.keys())}"
         parser.add_argument("action", choices=list(self._actions.values()) + [[]], nargs='*',
                             metavar="action", type=self._actions.get, help=action_help)
+        
+        for action in self._actions.keys():
+            flag = f"{action}-args"
+            if flag in self._axes.keys():
+                logging.warning("Axis %(flag)s shadows built-in --%(flag)s flag!", {'flag': flag})
+            else:
+                parser.add_argument(f"--{flag}", type=split, action=_AppendAxisValuesAction,
+                                    help=f"Extra arguments for {action} action.")
+
         return parser
 
     def _parse_args(self, argv: List[str] = None) -> Namespace:
@@ -215,11 +231,19 @@ class Runner:
                                 len(self._matrix), args.slice.denominator)
             self._matrix = self._matrix[args.slice.numerator-1::args.slice.denominator]
 
+        extra_args = {'*': []}
+        if "extra-args" not in self._axes.keys():
+            extra_args['*'] = args.extra_args or []
+        for action in args.action:            
+            extra_args[action.name] = []
+            if f"{action}-args" not in self._axes.keys():
+                extra_args[action.name] = vars(args)[f"{action}_args"] or []
+
         for config in self._matrix:
-            self.run_config(args.action, config)
+            self.run_config(args.action, config, extra_args)
         return all(r.success for r in reduce_dict(self._records))
 
-    def run_config(self, actions: List[Action], config: Config):
+    def run_config(self, actions: List[Action], config: Config, extra_args: Mapping[str, List[str]]):
         """Run all actions for the given configuration."""
         for action in actions:
             cfg = "][".join([self._axes[k].tostring(vars(config)[k]) for k in sorted(self._axes.keys())])
@@ -227,7 +251,7 @@ class Runner:
                                f"%({prefs.prefix_colors()['action']})s({action.name}"
                                f"%(cmd)s)%(reset)s %(log_color)s%(message)s")
             with log_formatter(fmt):
-                results = action(config)
+                results = action(config, extra_args=extra_args['*'] + extra_args[action.name])
                 self.record_results(action, config, results)
 
     def record_results(self, action: Action, config: Config, results: List[Result]):

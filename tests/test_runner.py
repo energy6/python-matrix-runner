@@ -127,15 +127,15 @@ class TestRunner(TestCase):
 
         # THEN only nine out of 27 configurations are ran
         expected_calls = [
-            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE1)),
-            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE1)),
-            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE1)),
-            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE2)),
-            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE2)),
-            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE2)),
-            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3)),
-            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE3)),
-            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE3))
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE1), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE1), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE1), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE2), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE2), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE2), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE3), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE3), ANY)
         ]
         runner.run_config.assert_has_calls(expected_calls)
         self.assertEqual(runner.run_config.call_count, len(expected_calls))
@@ -180,12 +180,12 @@ class TestRunner(TestCase):
 
         # THEN the the first six permutations are ran
         expected_calls = [
-            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE1)),
-            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3)),
-            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE2)),
-            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE1)),
-            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE3)),
-            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE2))
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE1), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE2), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE1), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE3), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE2), ANY)
         ]
         runner.run_config.assert_has_calls(expected_calls)
         self.assertEqual(runner.run_config.call_count, len(expected_calls))
@@ -196,11 +196,11 @@ class TestRunner(TestCase):
 
         # THEN the last five permutations are ran
         expected_calls = [
-            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE2)),
-            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE1)),
-            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3)),
-            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE2)),
-            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE1))
+            call(ANY, Config(first=MyAxisValue.VALUE1, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE2), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE1), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE2, second=MyAxisValue.VALUE2, third=MyAxisValue.VALUE3), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE1, third=MyAxisValue.VALUE2), ANY),
+            call(ANY, Config(first=MyAxisValue.VALUE3, second=MyAxisValue.VALUE3, third=MyAxisValue.VALUE1), ANY)
         ]
         runner.run_config.assert_has_calls(expected_calls)
         self.assertEqual(runner.run_config.call_count, len(expected_calls))
@@ -259,27 +259,32 @@ class TestRunner(TestCase):
          {'first': [MyAxisValue.VALUE1, MyAxisValue.VALUE3],
           'second': [MyAxisValue.VALUE2], 'action': ['first'],
           'pairwise': False, 'debug': False, 'verbose': False, 'silent': False,
-          'slice': None}),
+          'slice': None, 'extra_args': None, 'first_args': None, 'second_args': None}),
         (['-2', 'first', 'second'],
          {'first': None, 'second': None, 'action': ['first', 'second'],
           'pairwise': True, 'debug': False, 'verbose': False, 'silent': False,
-          'slice': None}),
+          'slice': None, 'extra_args': None, 'first_args': None, 'second_args': None}),
         (['--debug', 'first'],
          {'first': None, 'second': None, 'action': ['first'],
           'pairwise': False, 'debug': True, 'verbose': False, 'silent': False,
-          'slice': None}),
+          'slice': None, 'extra_args': None, 'first_args': None, 'second_args': None}),
         (['--verbose', 'first'],
          {'first': None, 'second': None, 'action': ['first'],
           'pairwise': False, 'debug': False, 'verbose': True, 'silent': False,
-          'slice': None}),
+          'slice': None, 'extra_args': None, 'first_args': None, 'second_args': None}),
         (['--silent', 'first'],
          {'first': None, 'second': None, 'action': ['first'],
           'pairwise': False, 'debug': False, 'verbose': False, 'silent': True,
-          'slice': None}),
+          'slice': None, 'extra_args': None, 'first_args': None, 'second_args': None}),
         (['--slice', '1/2', 'first'],
          {'first': None, 'second': None, 'action': ['first'],
           'pairwise': False, 'debug': False, 'verbose': False, 'silent': False,
-          'slice': matrix_runner.runner.Slice('1/2')})
+          'slice': matrix_runner.runner.Slice('1/2'),
+          'extra_args': None, 'first_args': None, 'second_args': None}),
+        (['first', '--extra-args="--extra1"', '--first-args="--extra2"', '--second-args="--extra3"'],
+         {'first': None, 'second': None, 'action': ['first'],
+          'pairwise': False, 'debug': False, 'verbose': False, 'silent': False,
+          'slice': None, 'extra_args': ['--extra1'], 'first_args': ['--extra2'], 'second_args': ['--extra3']})
     ])
     def test_arg_parser(self, argv, args):
         # Given a new Runner object
@@ -326,8 +331,8 @@ class TestRunner(TestCase):
         # ... which returns the expected Namespace object
         result = parser.parse_args(['-s', 'True', 'first'])
         self.assertDictEqual({'first': None, 'second': [MyBoolAxisValue.POSITIVE], 'action': [actions['first']],
-                              'pairwise': False, 'debug': False, 'verbose': False, 'silent': False, 'slice': None},
-                             vars(result))
+                              'pairwise': False, 'debug': False, 'verbose': False, 'silent': False, 'slice': None,
+                              'extra_args': None, 'first_args': None, 'second_args': None}, vars(result))
 
     def test_parse_args(self):
         # Given a new Runner object

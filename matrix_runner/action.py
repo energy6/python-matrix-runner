@@ -46,12 +46,16 @@ class Action:
     def __repr__(self):
         return self._name
 
-    def __call__(self, config: Config) -> List[Result]:
+    def __call__(self, config: Config, extra_args: List[str] = None) -> List[Result]:
         results = []
         params = [config]
-        if len(signature(self._fn).parameters) >= 2:
+        kvparams = {}
+        fnsign = dict(signature(self._fn).parameters)
+        if fnsign.pop('extra_args', None) and extra_args:
+            kvparams['extra_args'] = extra_args
+        if len(fnsign) >= 2:
             params += [results]
-        cmds = self._fn(*params)
+        cmds = self._fn(*params, **kvparams)
         try:
             for cmd in cmds:
                 results.append(cmd())
