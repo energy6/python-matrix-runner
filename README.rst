@@ -97,8 +97,8 @@ Writing the following to ``build.py``::
 Can be executed as::
 
     $ ./build.py --help
-    usage: build.py [-h] [--silent | --verbose | --debug] [--pairwise] [--slice <HERE>/<TOTAL>]
-                    [--alpha ALPHA] action [action ...]
+    usage: build.py [-h] [--silent | --verbose | --debug] [--pairwise] [--slice <HERE>/<TOTAL>] [--extra-args EXTRA_ARGS] 
+                    [--alpha ALPHA] [--dump-args DUMP_ARGS] action [action ...]
 
     positional arguments:
       action                Action(s) to run: dump
@@ -111,8 +111,12 @@ Can be executed as::
       --pairwise, -2        Reduce number of combinations using pairwise algorithm.
       --slice <HERE>/<TOTAL>
                             Cut set of combinations into <TOTAL> number of slices and run ony <HERE>th one.
+      --extra-args EXTRA_ARGS
+                            Extra arguments for all actions.
       --alpha ALPHA, -a ALPHA
                             A configuration axis: value1|v1, value2|v2, value3|v3
+      --dump-args DUMP_ARGS 
+                            Extra arguments for dump action.
 
     $ ./build.py -a v[23] dump
     [value2](dump:dump_config) /usr/bin/sh -c echo 'Config(alpha=<MyAlphaAxisValue.Value2: ('value2', 'v2')>)'
@@ -188,7 +192,7 @@ Actions are used to capture different workflow steps, such as `compile` and
 with ``@matrix_action``::
 
     @matrix_action
-    def dump(config: Config <, results: List[Result]>):
+    def dump(config: Config<, results: List[Result]><, extra_args: List[str] = None>):
         """Dump configuration to console"""
         pre_process()
         yield dump_config(config, 'Hello', 'World')
@@ -203,6 +207,9 @@ can be used to generate the commands depending on the actual configuration.
 
 The optional ``results`` argument can be used to gain access to the list of
 Command_ results gathered so far, e.g. for adding post-processing.
+
+The optional ``extra_args`` named-argument can be used to receive a list additional
+command line arguments provided via `--extra-args` or `--<action>-args`.
 
 The function needs to ``yield`` Command_'s, i.e. ``dump_config`` needs to be
 an annotated command function. Pre and post processing code can be added
@@ -434,7 +441,8 @@ trivial. The generated interface looks like this::
 
     $ ./build.py --help
     usage: build.py [-h] [--silent | --verbose | --debug] [--pairwise] [--slice <HERE>/<TOTAL>]
-                    [[--<axis> <AXIS>] ...] action [action ...]
+                    [--extra-args EXTRA_ARGS] [[--<axis> <AXIS>] ...] 
+                    [--<action>-args <ACTION>_ARGS] action [action ...]
 
 The positional argument ``action`` can be one or multiple define Action_'s to
 be executed in the given order, e.g. either ``build`` and ``run`` separately or
@@ -455,12 +463,16 @@ Matrix Runner itself and dynamic ones generated from the defined Axis_:
   of slices and executes only the ``HERE``'th one. This can be used to run the
   overall set of combinations in parallel. Slicing is applied after
   ``--pairwise`` reduction.
+- ``--extra-args EXTRA_ARGS`` can be used to provide custom arguments passed
+  on to all action functions taking an `extra_args`` named-argument.
 - ``-<a> <AXIS>``, ``--<axis> <AXIS>`` reduce number of combinations to
   selected ``AXIS`` values for ``axis`` Axis values can be given as one of
   their string representations *or* an fnmatch.fnmatch_ pattern matching at
   least one of these. In case of pattern matching *all* matching values are
   selected. This argument can be given multiple time which adds the values in a
   cumulative way.
+- ``--<action>-args <ACTION>_ARGS`` can be used to provide custom arguments passed
+  specifically to the <action> functions taking an `extra_args`` named-argument.
 
 The console output has two parts. While executing the actions the output from
 the associated commands is forwarded like this::

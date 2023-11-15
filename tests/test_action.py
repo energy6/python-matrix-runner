@@ -252,3 +252,44 @@ class TestAction(TestCase):
         # ... AND the commands have been called once up to the exception
         cmds[0].assert_called_once_with()
         cmds[1].assert_not_called()
+
+    def test_call_with_extra_args(self):
+        # GIVEN two mock'ed actions
+        config = MagicMock()
+        args = MagicMock()
+        expected_results = [MagicMock(name='result1'), MagicMock(name='result2')]
+        cmds = [
+            MagicMock(name='cmd1', return_value=expected_results[0]),
+            MagicMock(name='cmd2', return_value=expected_results[1])
+        ]
+        action_mock = MagicMock(return_value=cmds)
+        action1 = Action("action",
+                        lambda c, extra_args: action_mock(c, extra_args),  # pylint: disable=unnecessary-lambda
+                        "description for action")
+        action2 = Action("action",
+                        lambda c, r, extra_args: action_mock(c, r, extra_args),  # pylint: disable=unnecessary-lambda
+                        "description for action")
+
+        # WHEN the first action is called
+        results = action1(config, extra_args=args)
+        # THEN the results are as expected
+        self.assertEqual(expected_results, results)
+        # ... AND the action has been called
+        action_mock.assert_called_once_with(config, args)
+        # ... AND all commands have been called once
+        cmds[0].assert_called_once_with()
+        cmds[1].assert_called_once_with()
+
+        action_mock.reset_mock()
+        cmds[0].reset_mock()
+        cmds[1].reset_mock()        
+
+        # WHEN the second action is called
+        results = action2(config, extra_args=args)
+        # THEN the results are as expected
+        self.assertEqual(expected_results, results)
+        # ... AND the action has been called
+        action_mock.assert_called_with(config, expected_results, args)
+        # ... AND all commands have been called once
+        cmds[0].assert_called_with()
+        cmds[1].assert_called_with()
