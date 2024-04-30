@@ -269,6 +269,39 @@ class TestCommand(TestCase):
             # ... AND the report result has been added to the command result
             self.assertEqual(report_result_mock, result_mock.test_report)
 
+    def test_execute_exception(self):
+        cmdline = ['cmd', 'line', 'args']
+        cmdline_resolved = ['cmd', 'line', 'args']
+
+        # GIVEN internal Command functions mock'ed
+        with mock.patch('matrix_runner.command.Command._popen', new_callable=MagicMock) as popen_mock,\
+             mock.patch('matrix_runner.command.Command._resolve_cmdline', new_callable=MagicMock) as resolve_mock,\
+             mock.patch('matrix_runner.command.FileLock', new_callable=MagicMock) as lock_mock,\
+             mock.patch('matrix_runner.command.sleep', new_callable=MagicMock) as sleep_mock:
+            # ... AND a Command object with default parameters is used
+            cmd = Command(MagicMock)
+            # ... AND using mock'ed result
+            result_mock = MagicMock()
+            # ... AND letting the execution throw a FileNotFoundError exception
+            popen_mock.side_effect = FileNotFoundError()
+            # ... AND letting the resolver return a modified command line
+            resolve_mock.return_value = cmdline_resolved
+
+            # WHEN executing a given command line
+            cmd._execute(cmdline, result_mock)
+
+            # THEN the result is failed
+            self.assertFalse(result_mock.success)
+            # ... AND the resolver got called once with the original command line
+            resolve_mock.assert_called_once_with(cmdline)
+            # ... AND the executor got called once with the resolved command line and default parameters
+            popen_mock.assert_called_once_with(cmdline_resolved, result_mock, needs_shell=False, encoding='utf-8',
+                                               timeout=None, extra=ANY)
+            # ... AND no FileLock has been acquired
+            lock_mock.assert_not_called()
+            # ... AND no sleep has been issued
+            sleep_mock.assert_not_called()
+
     def test_popen(self):
         with captured_output() as (stdout, stderr):
             # GIVEN a properly configured logging

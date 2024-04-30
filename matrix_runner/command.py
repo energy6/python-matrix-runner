@@ -275,7 +275,13 @@ class Command:
         cmdline = self._resolve_cmdline(cmdline)
         logging.warning(" ".join(cmdline), extra=self.extra)
 
-        success = self._execute_with_lock(cmdline, result)
+        success = False
+        try:
+            success = self._execute_with_lock(cmdline, result)
+        except FileNotFoundError as e:
+            result.success = False
+            logging.debug("FileNotFoundError", exc_info=e, extra=self.extra)
+            logging.error("Executing command '%s' failed!", cmdline[0], extra=self.extra)
 
         if self._test_report:
             if isinstance(self._test_report, Callable):
