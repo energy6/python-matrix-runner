@@ -32,27 +32,27 @@ setup(
         'allpairspy~=2.5',
         'ansicolors~=1.1',
         'colorama~=0.4',
-        'colorlog~=6.7',
-        'filelock~=3.12',
-        'junitparser~=2.8',
-        'lxml~=4.9',
+        'colorlog~=6.10',
+        'filelock~=3.29',
+        'junitparser~=5.0',
+        'lxml~=6.1',
         'parameterized~=0.9',
-        'psutil~=5.9',
-        'tabulate~=0.9'
+        'psutil~=7.2',
+        'tabulate~=0.10'
     ],
     extras_require={
         'dev': [
-            'coverage~=6.5',
-            'pylint~=2.17',
-            'restructuredtext_lint~=1.4',
-            'setuptools~=68.2',
-            'unittest-xml-reporting~=3.2'
+            'coverage~=7.13',
+            'pylint~=4.0',
+            'restructuredtext_lint~=2.0',
+            'setuptools~=82.0',
+            'unittest-xml-reporting~=4.0'
         ]
     },
     entry_points={
         'console_scripts': ['matrix-runner-inspect=matrix_runner.inspect:InspectRunner'],
     },
-    python_requires='>=3.8',
+    python_requires='>=3.10',
     url='https://github.com/energy6/python-matrix-runner',
     license='BSD 3-Clause License',
     author='Jonatan Antoni',
@@ -68,11 +68,11 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Topic :: Software Development :: Build Tools"
     ]
 )

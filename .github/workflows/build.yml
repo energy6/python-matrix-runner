@@ -11,14 +11,14 @@ jobs:
     name: Build distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.8'
+          python-version: '3.10'
 
       - name: Install setup dependencies
         run: |
@@ -31,7 +31,7 @@ jobs:
           twine check dist/*
 
       - name: Upload distribution
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           path: dist/*
 
@@ -39,14 +39,14 @@ jobs:
     name: Run PyLint checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.8'
+          python-version: '3.10'
 
       - name: Install dev dependencies
         run: |
@@ -64,9 +64,9 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -75,7 +75,7 @@ jobs:
           domain: energy6
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -90,14 +90,14 @@ jobs:
           coverage xml --include="./matrix_runner/**"
 
       - name: Publish test results
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v6
         with:
           github_token: ${{ github.token }}
           check_name: "JUnit Test Report [${{ matrix.os }}, ${{ matrix.python-version }}]"
           report_paths: junit/*.xml
         if: ${{ always() }}
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
